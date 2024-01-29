@@ -88,7 +88,9 @@ $(function () {
       "<br>Current session time: " +
       formatDuration(session_time) +
       "<br>Max session time: " +
-      formatDuration(max_session_seconds);
+      formatDuration(max_session_seconds) +
+      "<br>The host server resets every 12 hours" +
+      "<br>at 00:00 and 12:00 UTC+0.";
     document.getElementById("session_time").innerHTML = message;
   });
   socket.on("disconnect", () => {
