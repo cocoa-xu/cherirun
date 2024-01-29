@@ -60,6 +60,7 @@ $(function () {
     socket.emit("resize", { cols: evt.cols, rows: evt.rows });
   });
   fitAddon.fit();
+  let disconnected = false;
   const term_resize_ob = new ResizeObserver((entries) => {
     try {
       fitAddon && fitAddon.fit();
@@ -81,7 +82,8 @@ $(function () {
     const max_session_seconds = data.max_session_seconds;
 
     const message =
-      "Session started at " +
+      "Running "+ conf.title +
+      "<br>Session started at " +
       new Date(session_start).toLocaleString() +
       "<br>Current session time: " +
       formatDuration(session_time) +
@@ -90,13 +92,17 @@ $(function () {
     document.getElementById("session_time").innerHTML = message;
   });
   socket.on("disconnect", () => {
+    document.getElementById("session_time").innerHTML += "<br>Disconnected from server.";
     term.write("\r\n-- Disconnected from server --\r\n");
+    socket.disconnect();
   });
   socket.on("data", (data) => {
     term.write(data);
   });
   term.onData((data) => {
-    socket.emit("data", data);
+    if (socket.connected) {
+      socket.emit("data", data);
+    }
   });
 
   sWindowUI();

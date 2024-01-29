@@ -7,13 +7,18 @@ const io = new Server(server);
 const pty = require('node-pty');
 const fs = require('fs');
 const pug = require('pug');
+const logger = require('pino')();
+const pino = require('pino-http')();
+const crypto = require('crypto');
 
-app.use(express.static('static'));
-app.set('view engine', 'pug');
 const partial_run_script = fs.readFileSync('./static/js/run.js', 'utf8');
 // const max_network_lose_seconds = 2 * 60;
-// const max_session_seconds = 2 * 60 * 60;
-const max_session_seconds = 5 * 60;
+const max_session_seconds = 2 * 60 * 60;
+
+app.use(express.static('static'));
+app.use(pino);
+app.set('view engine', 'pug');
+
 check_configurations = (conf) => {
   let arch = conf.architecture;
   let disk_image = conf.disk_image;
@@ -58,6 +63,13 @@ docker run -it --rm ${docker_image_name} \${NCPUS} \${MEMORY}`;
   return [docker_image_name, error_message, arch, disk_image, version, code, run_url];
 }
 
+createShortHash = (address, length = 8) => {
+  const hash = crypto.createHash('sha256');
+  hash.update(`${address}`);
+  const fullHash = hash.digest('hex');
+  return fullHash.substring(0, length);
+}
+
 app.get('/', (req, res) => {
   let conf = req.query;
   if (conf == {}  || conf === undefined || (conf.architecture === undefined && conf.disk_image === undefined && conf.version === undefined)) {
@@ -77,28 +89,33 @@ app.get('/run', (req, res) => {
   if (conf == {}  || conf === undefined || (conf.architecture === undefined && conf.disk_image === undefined && conf.version === undefined)) {
     res.redirect('/');
   }
-  const [_docker_image_name, error_message, arch, disk_image, version, code, run_url] = check_configurations(conf);
+  const [docker_image_name, error_message, arch, disk_image, version, code, run_url] = check_configurations(conf);
   if (error_message != '') {
     res.render('./index.pug', { message: code, run_url: run_url});
   } else {
-    const conf_script = JSON.stringify({architecture: arch, disk_image: disk_image, version: version});
+    const title = docker_image_name.replace('cocoaxu/', '');
+    const conf_script = JSON.stringify({architecture: arch, disk_image: disk_image, version: version, title: title});
     const run_script = `const conf = ${conf_script};\n${partial_run_script}`;
-    res.render('./run.pug', { run_script: run_script });
+    res.render('./run.pug', { run_script: run_script, title: title });
   }
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  const address = socket.handshake.address;
+  const user = createShortHash(address);
 
+  logger.info(`[${user}@${address}] socketio connected`);
   let term = undefined;
   socket.on('request_start', (conf) => {
     if (conf == {}  || conf === undefined || (conf.architecture === undefined && conf.disk_image === undefined && conf.version === undefined)) {
-      socket.emit('request_error', 'error: invalid configuration');
+      logger.error(`[${user}@${address}] missing parameters in configuration`);
+      socket.emit('request_error', 'error: missing parameters in configuration');
       socket.disconnect();
       return;
     }
     const [docker_image_name, error_message, _arch, _disk_image, _version, _code, _run_url] = check_configurations(conf);
     if (error_message != '') {
+      logger.error(`[${user}@${address}] invalid configuration`);
       socket.emit('request_error', 'error: invalid configuration');
       socket.disconnect();
       return;
@@ -124,6 +141,7 @@ io.on('connection', (socket) => {
       session_time = Math.floor((Date.now() - session_start) / 1000);
       socket.emit('session_time', { session_start: session_start, session_time: session_time, max_session_seconds: max_session_seconds });
       if (session_time > max_session_seconds) {
+        logger.info(`[${user}@${address}] max session time reached`);
         socket.disconnect();
         session_time_handle && clearInterval(session_time_handle);
         session_time_handle = undefined;
@@ -139,19 +157,20 @@ io.on('connection', (socket) => {
       term.resize(data.cols, data.rows);
     });
     socket.on('disconnect', () => {
-      console.log('user disconnected');
+      logger.info(`[${user}@${address}] socketio disconnected`);
       term.write(Uint8Array.from([0x01, 'x'.charCodeAt(0)]));
       term.kill(9);
       session_time_handle && clearInterval(session_time_handle);
       session_time_handle = undefined;
     });
-    term.onExit((code, signal) => {
-      socket.emit('Process exited with code ' + code);
+    term.onExit(e => {
+      logger.info(`[${user}@${address}] processes exited, code=${e.exitCode}, signal=${e.signal}`);
+      socket.emit('Process exited with code ' + e.exitCode);
       socket.disconnect();
     });
   });
 });
 
 server.listen(3000, () => {
-  console.log('listening on *:3000');
+  logger.info(`listening on *:3000`);
 });
