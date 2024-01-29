@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "4",
+    "express-rate-limit": "^7.1.5",
     "node-pty": "^1.0.0",
     "pino": "^8.17.2",
     "pino-http": "^9.0.0",
