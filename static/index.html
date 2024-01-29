@@ -9,6 +9,13 @@
     <meta name="description" content="Run CheriBSD in Browser" />
     <meta name="author" content="Cocoa Xu" />
     <meta name="keywords" content="cheribsd, morello, online, virtual machine, qemu, purecap, hybrid" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#00aba9">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="/css/xterm.css" />
     <link rel="stylesheet" href="/css/style.css" />
     <link rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css' />
@@ -23,7 +30,7 @@
       <div class="window window--terminal" data-window="terminal"
         style="width:800px;height:560px;top:16%;left:20%;">
         <div class="window__handler">
-          <div class="window__title" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">Terminal</div>
+          <div class="window__title">Terminal</div>
           <div class="window__controls">
             <a class="window__close"></a>
             <a class="window__minimize" style="pointer-events: none;"></a>
@@ -38,8 +45,6 @@
     <div class="context" hidden></div>
     <script>
       const theme = {
-        // Define your base theme colors
-        // (These are just examples; adjust them as needed)
         background: '#000000',
         foreground: '#ffffff',
         cursor: '#ffffff',
@@ -74,10 +79,7 @@
             const g = Math.floor((colorIndex % 36) / 6) * 51;
             const b = (colorIndex % 6) * 51;
 
-            // Convert RGB values to hexadecimal format
             const color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-
-            // Assign the color to the extendedAnsi object
             extendedAnsi[i.toString()] = { color };
           }
 
@@ -110,7 +112,7 @@
       })
       term_resize_ob.observe(document.getElementById('terminal'))
       socket.on('disconnect', () => {
-        // term.write('Disconnected from server\n')
+        term.write('-- Disconnected from server --\n')
       })
       socket.on('data', (data) => {
         term.write(data)
