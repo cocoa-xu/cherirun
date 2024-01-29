@@ -89,11 +89,8 @@ $(function () {
       formatDuration(session_time) +
       "<br>Max session time: " +
       formatDuration(max_session_seconds) +
-      "<br><br>Note that the host server resets every 12 hours" +
-      "<br>at 00:00 and 12:00 UTC+0." +
-      "<br><br>Also, pasting multi lines of code will cause" +
-      "<br>the terminal to freeze. Please paste one line at a time," +
-      "<br>or using GitHub gist or pastebin or eqvilent services.";
+      "<br><br>Note that the host server resets every 12 hours at 00:00 and 12:00 UTC+0." +
+      "<br>Also, pasting multi lines of code will cause the terminal to freeze. Please paste one line at a time or using GitHub gist or pastebin or eqvilent services.";
     document.getElementById("session_time").innerHTML = message;
   });
   socket.on("disconnect", () => {
