@@ -159,7 +159,7 @@ io.on('connection', (socket) => {
     let session_time = 0;
     term = pty.spawn('docker', [
       'run', '-it', '--rm',
-      '--cpus=2', '--memory=1536m',
+      '--cpus=2', '--memory=2048m',
       docker_image_name], {
       name: 'xterm-color',
       cols: 80,
