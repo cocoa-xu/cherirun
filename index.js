@@ -83,7 +83,7 @@ docker run -it --rm ${docker_image_name}
 NCPUS=8
 MEMORY=8192
 docker run -it --rm ${docker_image_name} \${NCPUS} \${MEMORY}`;
-  const run_url = `/run?architecture=${arch}&disk_image=${disk_image}&version=${version}`;
+  const run_url = `https://cheri.run/run?architecture=${arch}&disk_image=${disk_image}&version=${version}`;
   return [docker_image_name, error_message, arch, disk_image, version, code, run_url];
 }
 
