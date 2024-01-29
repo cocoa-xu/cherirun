@@ -11,7 +11,9 @@ const pug = require('pug');
 app.use(express.static('static'));
 app.set('view engine', 'pug');
 const partial_run_script = fs.readFileSync('./static/js/run.js', 'utf8');
-
+// const max_network_lose_seconds = 2 * 60;
+// const max_session_seconds = 2 * 60 * 60;
+const max_session_seconds = 5 * 60;
 check_configurations = (conf) => {
   let arch = conf.architecture;
   let disk_image = conf.disk_image;
@@ -102,19 +104,31 @@ io.on('connection', (socket) => {
       return;
     }
 
-    term = pty.spawn('docker', [
-      'run', '-it', '--rm', 
-      '--cpus=2', '--memory=1024m', 
-      '--storage-opt', 'size=16G', 
-      '--device-read-bps', '50m',
-      '--device-write-bps', '50m',
-      docker_image_name], {
+    const session_start = Date.now();
+    let session_time = 0;
+    // term = pty.spawn('docker', [
+    //   'run', '-it', '--rm', 
+    //   '--cpus=2', '--memory=1024m', 
+    //   // '--storage-opt', 'size=16G', 
+    //   // '--device-read-bps', '50mb',
+    //   // '--device-write-bps', '50mb',
+    //   docker_image_name], {
+    term = pty.spawn('bash', [], {
       name: 'xterm-color',
       cols: 80,
       rows: 24,
       cwd: process.env.HOME,
       env: process.env,
     });
+    session_time_handle = setInterval(() => {
+      session_time = Math.floor((Date.now() - session_start) / 1000);
+      socket.emit('session_time', { session_start: session_start, session_time: session_time, max_session_seconds: max_session_seconds });
+      if (session_time > max_session_seconds) {
+        socket.disconnect();
+        session_time_handle && clearInterval(session_time_handle);
+        session_time_handle = undefined;
+      }
+    }, 1000);
     term.onData((data) => {
       socket.emit('data', data);
     });
@@ -128,21 +142,13 @@ io.on('connection', (socket) => {
       console.log('user disconnected');
       term.write(Uint8Array.from([0x01, 'x'.charCodeAt(0)]));
       term.kill(9);
+      session_time_handle && clearInterval(session_time_handle);
+      session_time_handle = undefined;
     });
     term.onExit((code, signal) => {
       socket.emit('Process exited with code ' + code);
       socket.disconnect();
     });
-  });
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-    if (term === undefined) {
-      return;
-    }
-    term.write(Uint8Array.from([0x01, 'x'.charCodeAt(0)]));
-    term.kill(9);
-    term = undefined;
   });
 });
 

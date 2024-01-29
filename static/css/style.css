@@ -151,8 +151,8 @@ a {
   border-radius: 10px;
   background: #1e1e1f;
   color: #FFF;
-  min-width: 400px;
-  min-height: 200px;
+  min-width: 330px;
+  min-height: 100px;
   overflow: hidden;
   z-index: 1;
 }
@@ -670,6 +670,17 @@ a {
 }
 .window__body.black, .window__body.black .window__main {
   background: #000;
+}
+#session_time {
+  cursor: text;
+  position: relative;
+  user-select: text;
+  overflow-x: scroll;
+  font-family: monospace;
+}
+.window--terminal {
+  min-height: 200px;
+  min-width: 400px;
 }
 .window--terminal .window__body .window__main {
   line-height: 24px;
