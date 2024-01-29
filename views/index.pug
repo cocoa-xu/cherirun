@@ -1,0 +1,53 @@
+doctype html
+head
+  meta(charset='utf-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no')
+  title &#x1F352;cheri.run
+  meta(httpequiv='Content-Type' content='text/html; charset=utf-8')
+  meta(name='description' content='Run CheriBSD in Browser')
+  meta(name='author' content='Cocoa Xu')
+  meta(name='keywords' content='cheribsd, morello, online, virtual machine, qemu, purecap, hybrid')
+  link(rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png')
+  link(rel='icon' type='image/png' sizes='32x32' href='/favicon-32x32.png')
+  link(rel='icon' type='image/png' sizes='16x16' href='/favicon-16x16.png')
+  link(rel='manifest' href='/site.webmanifest')
+  link(rel='mask-icon' href='/safari-pinned-tab.svg' color='#5bbad5')
+  meta(name='msapplication-TileColor' content='#00aba9')
+  meta(name='theme-color' content='#ffffff')
+  link(rel='stylesheet' href='/css/bootstrap.min.css')
+  link(rel='stylesheet' href='https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css')
+  link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=K2D:300,400,500,700,800')
+section.bg-gradient.pt-5(style='height: 100vh;')
+  .container
+    .row
+      .col-12.d-flex.flex-row.align-items-center.justify-content-between
+        .heading-brand cheri.run
+        a.btn.btn-dark(href='https://cheri.build' target='_blank') Download Builds
+    .row.mt-1
+      .col-md-8.mx-auto.text-center
+        h1 CheriBSD that runs on the Cloud
+        p.lead.mb-4
+          | cheri.run runs a CheriBSD virtual machine on the cloud for easy access to everyone as a playground for experimenting with CHERI and Morello.
+      .col-md-8.mx-auto.text-center
+        a.btn.svg-icon(href=run_url target='_blank' style='background-color: #65B741; color: #fff;')
+          em.mr-2(data-feather='terminal')
+          |                     Start CheriBSD
+        a.btn.px-3.ml-3.svg-icon(href='https://github.com/sponsors/cocoa-xu' target='_blank' style='background-color: #F875AA; color: #fff;')
+          em.mr-2(data-feather='github')
+          |                     Sponsor Me
+    .row.mt-4
+      .col-md-9.mx-auto
+        .code-window
+          .dots
+            .red
+            .orange
+            .green
+          pre.language-bash.line-numbers
+            code.language-bash
+                =message
+script(src='https://code.jquery.com/jquery-3.2.1.min.js')
+script(src='https://cdn.jsdelivr.net/npm/feather-icons@4.7.3/dist/feather.min.js')
+script(src='https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js')
+script(src='https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js')
+script(src='https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.min.js')
+script(src='/js/scripts.js')

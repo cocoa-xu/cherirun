@@ -1,0 +1,40 @@
+doctype html
+head
+  meta(charset='utf-8')
+  meta(name='viewport' content='width=device-width, height=device-height, initial-scale=1')
+  title CheriBSD
+  meta(httpequiv='Content-Type' content='text/html; charset=utf-8')
+  meta(name='description' content='Run CheriBSD in Browser')
+  meta(name='author' content='Cocoa Xu')
+  meta(name='keywords' content='cheribsd, morello, online, virtual machine, qemu, purecap, hybrid')
+  link(rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png')
+  link(rel='icon' type='image/png' sizes='32x32' href='/favicon-32x32.png')
+  link(rel='icon' type='image/png' sizes='16x16' href='/favicon-16x16.png')
+  link(rel='manifest' href='/site.webmanifest')
+  link(rel='mask-icon' href='/safari-pinned-tab.svg' color='#5bbad5')
+  meta(name='msapplication-TileColor' content='#00aba9')
+  meta(name='theme-color' content='#ffffff')
+  link(rel='stylesheet' href='/css/xterm.css')
+  link(rel='stylesheet' href='/css/style.css')
+  link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css')
+  script(src='/js/xterm.js')
+  script(src='/js/xterm-addon-fit.js')
+  script(src='/js/xterm-addon-web-links.js')
+  script(src='/js/xterm-addon-canvas.js')
+  script(src='https://cdn.socket.io/4.7.2/socket.io.min.js')
+.desktop
+  .window.window--terminal(data-window='terminal' style='width:800px;height:560px;top:16%;left:20%;')
+    .window__handler
+      .window__title Terminal
+      .window__controls
+        a.window__close
+        a.window__minimize(style='pointer-events: none;')
+        a.window__maximize
+    .window__body
+      #terminal(style='width: 100%; height: calc(100% - 25px); margin: 2px 2px 2px 2px;')
+script
+    !=run_script
+script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js')
+script(src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js')
+script(src='https://cdn.rawgit.com/desandro/masonry/master/dist/masonry.pkgd.min.js')
+script(src='/js/terminal-script.js')
