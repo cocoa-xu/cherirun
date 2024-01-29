@@ -21,7 +21,7 @@ const pino_http = require('pino-http')({logger});
 
 const server_port = 3000;
 const partial_run_script = fs.readFileSync('./static/js/run.js', 'utf8');
-const max_session_seconds = 4 * 60 * 60;
+const max_session_seconds = 3 * 60 * 60;
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
 	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
