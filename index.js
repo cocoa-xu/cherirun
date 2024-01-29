@@ -203,6 +203,6 @@ setInterval(() => {
   logger.info(status)
 }, 30000);
 
-server.listen(server_port, () => {
+server.listen(server_port, '127.0.0.1', () => {
   logger.info({event: 'server_start', port: server_port});
 });
