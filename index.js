@@ -37,6 +37,7 @@ let status = {
 };
 let latest_tag = 'v2024.01.05-f8b62f01';
 
+app.set('trust proxy', 1);
 app.use('/run', limiter);
 app.use(express.static('static'));
 app.use(pino_http);
