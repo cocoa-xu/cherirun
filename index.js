@@ -12,9 +12,6 @@ const { rateLimit } = require('express-rate-limit');
 const pino = require('pino');
 const pinoms = require('pino-multi-stream');
 let log_dir = './logs';
-if (process.env.NODE_ENV == 'production') {
-  log_dir = '/logs';
-}
 const streams = [
   { stream: process.stdout },
   { stream: fs.createWriteStream(`${log_dir}/cherirun.log`, { flags: 'a' }) },
