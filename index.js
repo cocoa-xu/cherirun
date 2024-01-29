@@ -7,10 +7,16 @@ const io = new Server(server);
 const pty = require('node-pty');
 const fs = require('fs');
 const pug = require('pug');
-const logger = require('pino')();
-const pino = require('pino-http')();
 const crypto = require('crypto');
 const { rateLimit } = require('express-rate-limit');
+const pino = require('pino');
+const pinoms = require('pino-multi-stream');
+const streams = [
+  { stream: process.stdout },
+  { stream: fs.createWriteStream('./logs/cherirun.log', { flags: 'a' }) },
+]
+const logger = pino({ level: 'info' }, pinoms.multistream(streams));
+const pino_http = require('pino-http')({logger});
 
 const server_port = 3000;
 const partial_run_script = fs.readFileSync('./static/js/run.js', 'utf8');
@@ -29,7 +35,7 @@ let latest_tag = 'v2024.01.05-f8b62f01';
 
 app.use('/run', limiter);
 app.use(express.static('static'));
-app.use(pino);
+app.use(pino_http);
 app.set('view engine', 'pug');
 
 check_configurations = (conf) => {
