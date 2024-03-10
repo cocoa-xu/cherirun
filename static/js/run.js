@@ -43,7 +43,6 @@ $(function () {
       return extendedAnsi;
     })(),
   };
-  var socket = io();
   var term = new Terminal({
     rows: 24,
     cols: 80,
@@ -56,12 +55,25 @@ $(function () {
   term.loadAddon(new WebLinksAddon.WebLinksAddon());
   term.open(document.getElementById("terminal"));
   term.loadAddon(new CanvasAddon.CanvasAddon());
+
+  var socket = io("wss://cloudshell.cheri.run");
+  term.write('connecting to server...');
   term.onResize((evt) => {
-    socket.emit("resize", { cols: evt.cols, rows: evt.rows });
+    socket.emit("resize", { 
+      cols: evt.cols,
+      rows: evt.rows
+    });
   });
   fitAddon.fit();
-  let disconnected = false;
-  const term_resize_ob = new ResizeObserver((entries) => {
+  const connectingHint = setInterval(() => {
+    if (socket.connected) {
+      clearInterval(connectingHint);
+      return;
+    }
+    term.write('.');
+  }, 1000);
+  let sizeUpdated = false;
+  const term_resize_ob = new ResizeObserver(() => {
     try {
       fitAddon && fitAddon.fit();
     } catch (err) {
@@ -70,28 +82,15 @@ $(function () {
   });
   term_resize_ob.observe(document.getElementById("terminal"));
   socket.on("connect", () => {
-    socket.emit("request_start", conf);
+    term.writeln("Connected to cheri.run server!");
   });
-  socket.on("request_error", (data) => {
-    term.write(data);
+  socket.on('not-ready', () => {
+    term.writeln("The host server is still starting. Please try again later.");
+  });
+  socket.on('exit', (evt) => {
+    term.write("Process exited with code " + evt.exitCode);
+    sizeUpdated = false;
     socket.disconnect();
-  });
-  socket.on("session_time", (data) => {
-    const session_time = data.session_time;
-    const session_start = data.session_start;
-    const max_session_seconds = data.max_session_seconds;
-
-    const message =
-      "Running "+ conf.title +
-      "<br>Session started at " +
-      new Date(session_start).toLocaleString() +
-      "<br>Current session time: " +
-      formatDuration(session_time) +
-      "<br>Max session time: " +
-      formatDuration(max_session_seconds) +
-      "<br><br>Note that the host server resets every 12 hours at 00:00 and 12:00 UTC+0." +
-      "<br>Also, pasting multi lines of code will cause the terminal to freeze. Please paste one line at a time or using GitHub gist or pastebin or eqvilent services.";
-    document.getElementById("session_time").innerHTML = message;
   });
   socket.on("disconnect", () => {
     document.getElementById("session_time").innerHTML += "<br>Disconnected from server.";
@@ -99,6 +98,13 @@ $(function () {
     socket.disconnect();
   });
   socket.on("data", (data) => {
+    if (!sizeUpdated) {
+      socket.emit('resize', {
+        cols: term.cols,
+        rows: term.rows
+      })
+      sizeUpdated = true
+    }
     term.write(data);
   });
   term.onData((data) => {
@@ -106,6 +112,46 @@ $(function () {
       socket.emit("data", data);
     }
   });
+
+  // set up drag to upload
+  const elem = document.getElementById("terminal")
+  elem.addEventListener('dragenter', (e) => {
+    if (!elem.classList.contains('dropzone-active'))
+      elem.classList.add('dropzone-active')
+  })
+
+  elem.addEventListener('dragleave', (e) => {
+    e.preventDefault()
+    if (elem.classList.contains('dropzone-active'))
+      elem.classList.remove('dropzone-active')
+  })
+
+  elem.addEventListener('dragover', (e) => {
+    e.preventDefault()
+  })
+
+  elem.addEventListener('drop', (e) => {
+    e.preventDefault()
+    elem.classList.remove('dropzone-active')
+    const file = e.dataTransfer.files[0]
+    const fileName = file.name
+    if (file.size > 5 * 1024 * 1024) {
+      this.alert("File too large. Max upload size is 5MB, your file is " + (file.size / 1024 / 1024).toFixed(2) + "MB")
+      return
+    }
+    uploadSpinner.style.visibility = 'visible'
+    socket.emit('upload', { file, fileName: file.name }, (result) => {
+      uploadSpinner.style.visibility = 'hidden'
+      console.log("upload result", result)
+      if (result == 0) {
+        this.alert(`${fileName} was uploaded to your home directory`)
+      } else {
+        if (result.err) {
+          this.alert(result.err)
+        }
+      }
+    })
+  })
 
   sWindowUI();
   var zIndex = 1,
@@ -169,34 +215,6 @@ $(function () {
           initialLeft = $(this).position().left;
       },
     });
-  }
-
-  function formatDuration(seconds) {
-    var hours = Math.floor(seconds / 3600);
-    var minutes = Math.floor((seconds % 3600) / 60);
-    var remainingSeconds = seconds % 60;
-
-    var parts = [];
-
-    if (hours > 0) {
-      parts.push(hours + (hours === 1 ? " hour" : " hours"));
-    }
-
-    if (minutes > 0) {
-      parts.push(minutes + (minutes === 1 ? " minute" : " minutes"));
-    }
-
-    if (remainingSeconds > 0) {
-      parts.push(
-        remainingSeconds + (remainingSeconds === 1 ? " second" : " seconds")
-      );
-    }
-
-    if (parts.length === 0) {
-      return "0 seconds";
-    }
-
-    return parts.join(" ");
   }
 
   function sWindowActive(window) {
